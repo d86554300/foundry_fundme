@@ -16,10 +16,10 @@ contract FundMe {
     uint256 public constant MINIMUM_USD = 5e18;
 
     mapping(address funder => uint256 amountFunded)
-        public addressToAmountFunded;
+        private s_addressToAmountFunded;
 
-    address[] public funders;
-    address public immutable i_owner;
+    address[] private funders;
+    address private immutable i_owner;
     AggregatorV3Interface private immutable s_priceFeed;
 
     // Constructor
@@ -41,7 +41,7 @@ contract FundMe {
             "Didn't have enough ETH!"
         );
         funders.push(msg.sender);
-        addressToAmountFunded[msg.sender] += msg.value;
+        s_addressToAmountFunded[msg.sender] += msg.value;
     }
 
     function withdraw() public onlyOwner {
@@ -51,7 +51,7 @@ contract FundMe {
             funderIndex++
         ) {
             address funder = funders[funderIndex];
-            addressToAmountFunded[funder] = 0;
+            s_addressToAmountFunded[funder] = 0;
         }
         funders = new address[](0);
         // // transfer
@@ -92,5 +92,22 @@ contract FundMe {
     // https://docs.chain.link/data-feeds/api-reference#version
     function getVersion() public view returns (uint256) {
         return s_priceFeed.version();
+    }
+
+    /**
+     * VIEW functions / Getters
+     */
+    function getAddressToAmountFunded(
+        address fundingAddress
+    ) external view returns (uint256) {
+        return s_addressToAmountFunded[fundingAddress];
+    }
+
+    function getFunder(uint256 index) external view returns (address) {
+        return funders[index];
+    }
+
+    function getOwner() external view returns (address) {
+        return i_owner;
     }
 }
