@@ -19,10 +19,12 @@ contract FundMe {
         public addressToAmountFunded;
 
     address[] public funders;
-    // Could we make this constant?  /* hint: no! We should make it immutable! */
-    address public /* immutable */ i_owner;
+    address public immutable i_owner;
+    AggregatorV3Interface private immutable s_priceFeed;
 
-    constructor() {
+    // Constructor
+    constructor(address priceFeed) {
+        s_priceFeed = AggregatorV3Interface(priceFeed);
         i_owner = msg.sender;
     }
 
@@ -34,11 +36,10 @@ contract FundMe {
         // allow users to send money
         // Have a min amount
         // 1e18 = 1 ETH
-        // 1e19 = 10 ETH
         require(
-            msg.value.getConversionRate() >= 1e18,
+            msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,
             "Didn't have enough ETH!"
-        ); // 1e18 = 1 ETH
+        );
         funders.push(msg.sender);
         addressToAmountFunded[msg.sender] += msg.value;
     }
@@ -90,9 +91,6 @@ contract FundMe {
     // Get the version of the price feed
     // https://docs.chain.link/data-feeds/api-reference#version
     function getVersion() public view returns (uint256) {
-        AggregatorV3Interface priceFeed = AggregatorV3Interface(
-            0x694AA1769357215DE4FAC081bf1f309aDC325306
-        );
-        return priceFeed.version();
+        return s_priceFeed.version();
     }
 }
