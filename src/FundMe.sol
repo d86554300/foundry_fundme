@@ -18,7 +18,7 @@ contract FundMe {
     mapping(address funder => uint256 amountFunded)
         private s_addressToAmountFunded;
 
-    address[] private funders;
+    address[] private s_funders;
     address private immutable i_owner;
     AggregatorV3Interface private immutable s_priceFeed;
 
@@ -40,20 +40,21 @@ contract FundMe {
             msg.value.getConversionRate(s_priceFeed) >= MINIMUM_USD,
             "Didn't have enough ETH!"
         );
-        funders.push(msg.sender);
+        s_funders.push(msg.sender);
         s_addressToAmountFunded[msg.sender] += msg.value;
     }
 
     function withdraw() public onlyOwner {
+        uint256 fundersLength = s_funders.length;
         for (
             uint256 funderIndex = 0;
-            funderIndex < funders.length;
+            funderIndex < fundersLength;
             funderIndex++
         ) {
-            address funder = funders[funderIndex];
+            address funder = s_funders[funderIndex];
             s_addressToAmountFunded[funder] = 0;
         }
-        funders = new address[](0);
+        s_funders = new address[](0);
         // // transfer
         // payable(msg.sender).transfer(address(this).balance);
 
@@ -104,7 +105,7 @@ contract FundMe {
     }
 
     function getFunder(uint256 index) external view returns (address) {
-        return funders[index];
+        return s_funders[index];
     }
 
     function getOwner() external view returns (address) {
