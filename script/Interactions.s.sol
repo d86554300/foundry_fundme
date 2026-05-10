@@ -23,7 +23,6 @@ contract FundFundMe is Script {
     }
 }
 
-contract WithdrawFundMe is Script {}
 contract WithdrawFundMe is Script {
     function withdrawFundMe(address mostRecentlyDeployment) public {
         vm.startBroadcast();
